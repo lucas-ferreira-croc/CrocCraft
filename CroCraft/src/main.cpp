@@ -13,6 +13,7 @@
 #include "display/Display.h"
 #include "shader/Shader.h"
 #include "mesh/Mesh.h"
+#include "camera/Camera.h"
 
 const int WINDOW_WIDTH = 1920 / 2, WINDOW_HEIGHT = 1920 / 2;
 
@@ -20,9 +21,12 @@ std::vector<std::unique_ptr<Shader>> shaders;
 std::unique_ptr<Mesh> mesh;
 std::unique_ptr<Display> display;
 std::shared_ptr<Texture> texture_default;
+std::shared_ptr<Camera> camera;
 
-glm::mat4 view = glm::mat4(1.0f);
 glm::mat4 projection = glm::mat4(1.0f);
+
+float delta_time;
+float last_time;
 
 void create_shaders()
 {
@@ -39,7 +43,7 @@ void setup()
 
 	create_shaders();
 
-	texture_default = std::make_shared<Texture>("C:\\dev\\CrocCraft\\CroCraft\\CroCraft\\assets\\textures\\parappa_block.png");
+	texture_default = std::make_shared<Texture>("C:\\dev\\CrocCraft\\CroCraft\\CroCraft\\assets\\textures\\grass_block.png");
 	texture_default->load_textureA();
 	
 	float vertices[] = {
@@ -118,12 +122,14 @@ void setup()
 
 	};	
 
-	
+	camera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90, 0.0f, 10.0f, .5f);
+	delta_time = 0.0f;
+	last_time =  0.0f; 
+
 	mesh = std::make_unique<Mesh>();
 	mesh->create_mesh(vertices, indices, 100, 36);
-
+	
 	projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
 }
 
 void render()
@@ -135,9 +141,8 @@ void render()
 	shaders[0]->bind();
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::rotate(model, (float)glfwGetTime() *  glm::radians(90.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(.5f, .5f, .5f));
 		shaders[0]->set_mat4("model", model);
-		shaders[0]->set_mat4("view", view);
+		shaders[0]->set_mat4("view", camera->calculate_view_matrix());
 		shaders[0]->set_mat4("projection", projection);
 		texture_default->use();
 		mesh->render();
@@ -152,6 +157,14 @@ int main()
 
 	while(!display->should_close())
 	{	
+		float now = glfwGetTime();
+		
+		delta_time = now - last_time;
+		last_time = now;
+
+		camera->key_control(display->get_keys(), delta_time);
+		camera->mouse_control(display->get_mouse_x_change(), display->get_mouse_y_change());
+
 		render();
 		glfwPollEvents();
 	}
