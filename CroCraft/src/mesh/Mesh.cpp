@@ -38,9 +38,7 @@ void Mesh::create_mesh(float* vertices, unsigned int* indices, unsigned int num_
 void Mesh::render()
 {
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 

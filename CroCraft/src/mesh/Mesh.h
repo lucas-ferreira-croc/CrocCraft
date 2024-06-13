@@ -18,7 +18,5 @@ private:
 	unsigned int ibo;
 
 	unsigned int index_count;
-
-	float point_size;
 };
 
